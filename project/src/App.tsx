@@ -31,7 +31,7 @@ const aircraft: Aircraft[] = [
     capacity: '4-seat aircraft',
     avionics: 'Traditional instruments',
     description: 'Perfect for beginners',
-    image: '/public/Cessna 172S.jpg'
+    image: '/cessna-172s.jpg'
   },
   {
     id: 'cessna-172s-g1000',
@@ -41,7 +41,7 @@ const aircraft: Aircraft[] = [
     capacity: '4-seat aircraft',
     avionics: 'Modern glass cockpit',
     description: 'Advanced training experience',
-    image: '/public/Cessna 172S G1000.jpg'
+    image: '/cessna-172s-g1000.jpg'
   },
   {
     id: 'cessna-152',
@@ -51,7 +51,7 @@ const aircraft: Aircraft[] = [
     capacity: '2-seat aircraft',
     avionics: 'Classic training aircraft',
     description: 'Most affordable option',
-    image: '/public/Cessna 152.jpg'
+    image: '/cessna-152.jpg'
   }
 ];
 
@@ -104,7 +104,7 @@ function App() {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('/public/PXL_20250507_223858595.jpg')`
+            backgroundImage: `url('/pxl_20250507_223858595.jpg')`
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-white/20 to-transparent"></div>
