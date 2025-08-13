@@ -110,7 +110,7 @@ function App() {
     <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-white/20 to-transparent"></div>
   </div>
   
-  <div className="relative z-10 text-center text-gray-900 px-4 max-w-4xl mx-auto">
+  <div className="relative z-10 text-center text-gray-900 px-4 max-w-4xl mx-auto translate-y-10">
     <div className="flex items-center justify-center mb-6">
       <Plane className="w-16 h-16 text-blue-600 mr-4" />
       <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
@@ -128,6 +128,7 @@ function App() {
     </button>
   </div>
 </section>
+
 
 
       {/* Aircraft Cards Section */}
