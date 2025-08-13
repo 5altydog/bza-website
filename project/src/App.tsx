@@ -99,35 +99,36 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-start justify-center overflow-hidden pt-40">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('/pxl_20250507_223858595.jpg')`
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-white/20 to-transparent"></div>
-        </div>
-        
-        <div className="relative z-10 text-center text-gray-900 px-4 max-w-4xl mx-auto">
-          <div className="flex items-center justify-center mb-6">
-            <Plane className="w-16 h-16 text-blue-600 mr-4" />
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-              Discover Aviation!
-            </h1>
-          </div>
-          <p className="text-xl md:text-2xl mb-4 font-light leading-relaxed">
-            Experience the magnificent Los Angeles coast from the air as you take off from Torrance and fly over the stunning Palos Verdes Peninsula.
-          </p>
-          <button 
-            onClick={() => document.getElementById('aircraft-section')?.scrollIntoView({ behavior: 'smooth' })}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
-          >
-            Choose Your Aircraft
-          </button>
-        </div>
-      </section>
+{/* Hero Section */}
+<section className="relative h-screen flex items-center justify-center overflow-hidden">
+  <div 
+    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+    style={{
+      backgroundImage: `url('/pxl_20250507_223858595.jpg')`
+    }}
+  >
+    <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-white/20 to-transparent"></div>
+  </div>
+  
+  <div className="relative z-10 text-center text-gray-900 px-4 max-w-4xl mx-auto">
+    <div className="flex items-center justify-center mb-6">
+      <Plane className="w-16 h-16 text-blue-600 mr-4" />
+      <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
+        Discover Aviation!
+      </h1>
+    </div>
+    <p className="text-xl md:text-2xl mb-4 font-light leading-relaxed">
+      Experience the magnificent Los Angeles coast from the air as you take off from Torrance and fly over the stunning Palos Verdes Peninsula.
+    </p>
+    <button 
+      onClick={() => document.getElementById('aircraft-section')?.scrollIntoView({ behavior: 'smooth' })}
+      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+    >
+      Choose Your Aircraft
+    </button>
+  </div>
+</section>
+
 
       {/* Aircraft Cards Section */}
       <section id="aircraft-section" className="relative -mt-60 py-20 bg-transparent">
