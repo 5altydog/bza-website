@@ -1,0 +1,34 @@
+import { Aircraft } from '../types';
+
+export const aircraft: Aircraft[] = [
+  {
+    id: 'cessna-172s',
+    name: 'Cessna 172S',
+    model: 'C172S',
+    price: 195,
+    capacity: '4-seat aircraft',
+    avionics: 'Traditional instruments',
+    description: 'Perfect for beginners',
+    image: '/cessna-172s.jpg'
+  },
+  {
+    id: 'cessna-172s-g1000',
+    name: 'Cessna 172S G1000',
+    model: 'C172S G1000',
+    price: 225,
+    capacity: '4-seat aircraft',
+    avionics: 'Modern glass cockpit',
+    description: 'Advanced training experience',
+    image: '/cessna-172s-g1000.jpg'
+  },
+  {
+    id: 'cessna-152',
+    name: 'Cessna 152',
+    model: 'C152',
+    price: 175,
+    capacity: '2-seat aircraft',
+    avionics: 'Classic training aircraft',
+    description: 'Most affordable option',
+    image: '/cessna-152.jpg'
+  }
+];
