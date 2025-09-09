@@ -12,27 +12,33 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onChooseAircraft, hero
   const title = heroContent?.title || 'Discover Aviation!';
   const subtitle = heroContent?.subtitle || 'Experience the magnificent Los Angeles coast from the air as you take off from Torrance and fly over the stunning Palos Verdes Peninsula.';
   const buttonText = heroContent?.button_text || 'Choose Your Aircraft';
-  const backgroundImage = heroContent?.background_image_url || '/pxl_20250507_223858595.jpg';
+  const backgroundImage = heroContent?.background_image_url || '/palos-verdes-coastline-aerial.jpg';
 
   return (
-    <section className="relative min-h-screen flex items-start justify-center overflow-hidden pt-40 md:pt-60">
+    <section 
+      className="relative min-h-screen flex items-start justify-center overflow-hidden pt-40 md:pt-60"
+      role="banner"
+      aria-label="Hero section with aerial view of Los Angeles coastline"
+    >
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url("${backgroundImage}")`
         }}
+        role="img"
+        aria-label="Aerial view of Los Angeles coastline and Palos Verdes Peninsula from aircraft"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-white/20 to-transparent"></div>
       </div>
       
       <div className="relative z-10 text-center text-gray-900 px-4 max-w-4xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-center mb-6">
-          <Plane className="w-12 h-12 md:w-16 md:h-16 text-blue-600 mb-4 md:mb-0 md:mr-6" />
+          <Plane className="w-12 h-12 md:w-16 md:h-16 text-blue-600 mb-4 md:mb-0 md:mr-6" aria-hidden="true" />
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight">
             {title}
           </h1>
         </div>
-        <p className="text-lg md:text-xl lg:text-2xl mb-6 font-light leading-relaxed">
+        <p className="text-lg md:text-xl lg:text-2xl mb-6 font-extralight leading-relaxed">
           {subtitle}
         </p>
         <button 

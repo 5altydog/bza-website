@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Block admin areas
+Disallow: /admin
+Disallow: /admin/
+
+# Allow important files
+Allow: /palos-verdes-coastline-aerial.jpg
+Allow: /cessna-*.jpg
+Allow: /n2114u.jpg
+Allow: /favicon.svg
+
+# Sitemap location
+Sitemap: https://www.flybyla.com/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1

@@ -26,6 +26,43 @@ export const useBookingForm = () => {
     return phoneRegex.test(phone.replace(/\D/g, ''));
   };
 
+  const formatPhoneNumber = (value: string, previousValue = ''): string => {
+    // Remove all non-digits
+    const digits = value.replace(/\D/g, '');
+    const prevDigits = previousValue.replace(/\D/g, '');
+    
+    // If user is deleting (fewer digits than before), be more permissive with formatting
+    const isDeleting = digits.length < prevDigits.length;
+    
+    // Limit to 10 digits
+    const limitedDigits = digits.slice(0, 10);
+    
+    // Return empty string if no digits (allows complete clearing)
+    if (limitedDigits.length === 0) {
+      return '';
+    }
+    
+    // If deleting, be more permissive with formatting to allow easier deletion
+    if (isDeleting) {
+      if (limitedDigits.length <= 3) {
+        // When deleting down to 3 or fewer digits, don't add parentheses
+        return limitedDigits;
+      } else if (limitedDigits.length <= 6) {
+        // When deleting down to 6 or fewer digits, don't add the dash
+        return `(${limitedDigits.slice(0, 3)}) ${limitedDigits.slice(3)}`;
+      }
+    }
+    
+    // Format as (###) ###-####
+    if (limitedDigits.length >= 6) {
+      return `(${limitedDigits.slice(0, 3)}) ${limitedDigits.slice(3, 6)}-${limitedDigits.slice(6)}`;
+    } else if (limitedDigits.length >= 3) {
+      return `(${limitedDigits.slice(0, 3)}) ${limitedDigits.slice(3)}`;
+    } else {
+      return limitedDigits; // Return just the digits for 1-2 digits
+    }
+  };
+
   const validateDate = (date: string): boolean => {
     const selectedDate = new Date(date);
     const today = new Date();
@@ -73,13 +110,25 @@ export const useBookingForm = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Apply phone formatting only to phone field
+    let processedValue = value;
+    if (name === 'phone') {
+      // Allow completely empty value for deletion
+      if (value === '') {
+        processedValue = '';
+      } else {
+        processedValue = formatPhoneNumber(value, formData.phone);
+      }
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: processedValue }));
     
     // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
-  }, [errors]);
+  }, [errors, formData.phone]);
 
   const resetForm = useCallback(() => {
     setFormData(initialFormData);

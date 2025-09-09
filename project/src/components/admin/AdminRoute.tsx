@@ -53,9 +53,17 @@ export const AdminRoute: React.FC = () => {
     checkAuth();
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setIsAuthorized(false);
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setIsAuthenticated(false);
+      setIsAuthorized(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force local state reset even if signOut fails
+      setIsAuthenticated(false);
+      setIsAuthorized(false);
+    }
   };
 
   if (loading) {

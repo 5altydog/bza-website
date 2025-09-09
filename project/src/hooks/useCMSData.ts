@@ -77,12 +77,22 @@ export const useHeroContent = () => {
             title: 'Discover Aviation!',
             subtitle: 'Experience the magnificent Los Angeles coast from the air as you take off from Torrance and fly over the stunning Palos Verdes Peninsula.',
             button_text: 'Choose Your Aircraft',
-            background_image_url: '/pxl_20250507_223858595.jpg',
+            background_image_url: '/palos-verdes-coastline-aerial.jpg',
             is_active: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           });
         } else {
+          // Auto-migrate old background image filename to new one
+          if (data.background_image_url === '/pxl_20250507_223858595.jpg') {
+            data.background_image_url = '/palos-verdes-coastline-aerial.jpg';
+            // Update in database
+            supabase
+              .from('hero_content')
+              .update({ background_image_url: '/palos-verdes-coastline-aerial.jpg' })
+              .eq('id', data.id)
+              .then(() => console.log('Auto-migrated background image filename'));
+          }
           setHeroContent(data);
         }
       } catch {
@@ -93,7 +103,7 @@ export const useHeroContent = () => {
           title: 'Discover Aviation!',
           subtitle: 'Experience the magnificent Los Angeles coast from the air as you take off from Torrance and fly over the stunning Palos Verdes Peninsula.',
           button_text: 'Choose Your Aircraft',
-          background_image_url: '/pxl_20250507_223858595.jpg',
+          background_image_url: '/palos-verdes-coastline-aerial.jpg',
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -109,50 +119,66 @@ export const useHeroContent = () => {
   return { heroContent, loading, error };
 };
 
-export const useSiteSettings = () => {
+export const useSiteSettings = (forceReload = false) => {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('site_settings')
-          .select('*');
+  const loadSettings = async () => {
+    setLoading(true);
+    try {
+      console.log('Loading site settings for BookingModal... (forceReload:', forceReload, ')');
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*');
 
-        if (error) {
-          setError(error.message);
-          // Fallback to default settings
-          setSettings({
-            contact_phone: '(310) 754-5676',
-            contact_email: 'ted@flybz.net',
-            location_name: 'Zamperini Field, Torrance, California',
-            location_link: 'https://maps.app.goo.gl/Vg4yEELYLeREJKwK9'
-          });
-        } else {
-          const settingsMap = (data || []).reduce((acc, setting) => {
-            acc[setting.key] = setting.value;
-            return acc;
-          }, {} as Record<string, string>);
-          setSettings(settingsMap);
-        }
-      } catch {
-        setError('Failed to load site settings');
+      console.log('Site settings load result:', { data, error });
+
+      if (error) {
+        setError(error.message);
+        console.log('Using fallback settings due to error');
         // Fallback to default settings
         setSettings({
           contact_phone: '(310) 754-5676',
           contact_email: 'ted@flybz.net',
           location_name: 'Zamperini Field, Torrance, California',
-          location_link: 'https://maps.app.goo.gl/Vg4yEELYLeREJKwK9'
+          location_link: 'https://maps.app.goo.gl/Vg4yEELYLeREJKwK9',
+          booking_form_includes_text: 'Includes: 1-hour flight time, pre-flight briefing, instructor guidance, and post-flight debrief'
         });
-      } finally {
-        setLoading(false);
+      } else {
+        const settingsMap = (data || []).reduce((acc, setting) => {
+          acc[setting.key] = setting.value;
+          return acc;
+        }, {} as Record<string, string>);
+        
+        // If no booking_form_includes_text in database, use default
+        if (!settingsMap.booking_form_includes_text) {
+          settingsMap.booking_form_includes_text = 'Includes: 1-hour flight time, pre-flight briefing, instructor guidance, and post-flight debrief';
+        }
+        
+        console.log('Mapped settings:', settingsMap);
+        console.log('Booking form includes text from settings:', settingsMap.booking_form_includes_text);
+        setSettings(settingsMap);
       }
-    };
+    } catch (error) {
+      setError('Failed to load site settings');
+      console.error('Settings loading error:', error);
+      // Fallback to default settings
+      setSettings({
+        contact_phone: '(310) 754-5676',
+        contact_email: 'ted@flybz.net',
+        location_name: 'Zamperini Field, Torrance, California',
+        location_link: 'https://maps.app.goo.gl/Vg4yEELYLeREJKwK9',
+        booking_form_includes_text: 'Includes: 1-hour flight time, pre-flight briefing, instructor guidance, and post-flight debrief'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadSettings();
-  }, []);
+  }, [forceReload]);
 
-  return { settings, loading, error };
+  return { settings, loading, error, reloadSettings: loadSettings };
 };

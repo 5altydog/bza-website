@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Upload, X } from 'lucide-react';
 import { supabase, DatabaseAircraft } from '../../lib/supabase';
 
 interface AircraftManagerProps {
@@ -10,6 +10,7 @@ interface AircraftManagerProps {
 interface AircraftFormData {
   name: string;
   model: string;
+  tail_number: string;
   price: number;
   capacity: string;
   avionics: string;
@@ -26,9 +27,14 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadingAircraftId, setUploadingAircraftId] = useState<string | null>(null);
   const [formData, setFormData] = useState<AircraftFormData>({
     name: '',
     model: '',
+    tail_number: '',
     price: 0,
     capacity: '',
     avionics: '',
@@ -42,6 +48,7 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
     setFormData({
       name: '',
       model: '',
+      tail_number: '',
       price: 0,
       capacity: '',
       avionics: '',
@@ -53,12 +60,17 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
     setEditingId(null);
     setShowForm(false);
     setIsSubmitting(false);
+    setSelectedFile(null);
+    setPreviewUrl('');
+    setIsUploading(false);
+    setUploadingAircraftId(null);
   };
 
   const handleEdit = (aircraft: DatabaseAircraft) => {
     setFormData({
       name: aircraft.name,
       model: aircraft.model,
+      tail_number: aircraft.tail_number,
       price: aircraft.price,
       capacity: aircraft.capacity,
       avionics: aircraft.avionics,
@@ -67,56 +79,229 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
       is_active: aircraft.is_active,
       display_order: aircraft.display_order
     });
+    setPreviewUrl(aircraft.image_url);
+    setSelectedFile(null);
     setEditingId(aircraft.id);
     setShowForm(true);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file.');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB.');
+        return;
+      }
+
+      setSelectedFile(file);
+      
+      // Create preview URL
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const removeSelectedFile = () => {
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setSelectedFile(null);
+    setPreviewUrl(editingId ? formData.image_url : '');
+  };
+
+  const uploadFile = async (file: File): Promise<string> => {
+    setIsUploading(true);
+    
+    try {
+      // Create a unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `aircraft/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('aircraft-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Upload error:', error);
+        throw error;
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('aircraft-images')
+        .getPublicUrl(data.path);
+
+      return publicUrl;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleQuickImageUpload = (aircraftId: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        // Validate file
+        if (!file.type.startsWith('image/')) {
+          alert('Please select an image file.');
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          alert('File size must be less than 5MB.');
+          return;
+        }
+
+        setUploadingAircraftId(aircraftId);
+        
+        try {
+          // Upload the file
+          const imageUrl = await uploadFile(file);
+          
+          // Update the aircraft with the new image
+          const { error } = await supabase
+            .from('aircraft')
+            .update({ image_url: imageUrl })
+            .eq('id', aircraftId);
+
+          if (error) {
+            console.error('Error updating aircraft image:', error);
+            alert('Error updating aircraft image. Please try again.');
+          } else {
+            onAircraftUpdate();
+            alert('Aircraft image updated successfully!');
+          }
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          alert('Error uploading image. Please try again.');
+        } finally {
+          setUploadingAircraftId(null);
+        }
+      }
+    };
+    input.click();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Prevent multiple submissions
-    if (isSubmitting) {
+    if (isSubmitting || isUploading) {
       console.log('Already submitting, ignoring...');
+      return;
+    }
+
+    // Validate form data
+    if (!formData.name.trim() || !formData.model.trim() || !formData.tail_number.trim()) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    if (formData.price < 0) {
+      alert('Price cannot be negative');
+      return;
+    }
+
+    if (formData.display_order < 0) {
+      alert('Display order cannot be negative');
+      return;
+    }
+
+    // Validate that we have an image (either existing URL or new file)
+    if (!formData.image_url && !selectedFile) {
+      alert('Please provide an aircraft image');
       return;
     }
 
     setIsSubmitting(true);
     console.log('Form submitted:', { editingId, formData });
 
+    // Add timeout to prevent getting stuck
+    const timeoutId = setTimeout(() => {
+      console.error('Operation timed out after 30 seconds');
+      alert('Operation timed out. Please try again.');
+      setIsSubmitting(false);
+    }, 30000);
+
     try {
+      let finalImageUrl = formData.image_url;
+
+      // Upload new file if selected
+      if (selectedFile) {
+        finalImageUrl = await uploadFile(selectedFile);
+        console.log('File uploaded successfully:', finalImageUrl);
+      }
+      const finalFormData = { ...formData, image_url: finalImageUrl };
+
       if (editingId) {
         // Update existing aircraft
         console.log('Updating aircraft with ID:', editingId);
-        const { error } = await supabase
+        console.log('Update payload:', finalFormData);
+        
+        const { data, error } = await supabase
           .from('aircraft')
-          .update(formData)
-          .eq('id', editingId);
+          .update(finalFormData)
+          .eq('id', editingId)
+          .select();
+
+        console.log('Update response:', { data, error });
 
         if (error) {
           console.error('Supabase update error:', error);
+          console.error('Error details:', error.details, error.hint, error.code);
           throw error;
         }
-        console.log('Aircraft updated successfully');
+        console.log('Aircraft updated successfully:', data);
       } else {
         // Create new aircraft
         console.log('Creating new aircraft');
-        const { error } = await supabase
+        console.log('Insert payload:', finalFormData);
+        
+        const { data, error } = await supabase
           .from('aircraft')
-          .insert([formData]);
+          .insert([finalFormData])
+          .select();
+
+        console.log('Insert response:', { data, error });
 
         if (error) {
           console.error('Supabase insert error:', error);
+          console.error('Error details:', error.details, error.hint, error.code);
           throw error;
         }
-        console.log('Aircraft created successfully');
+        console.log('Aircraft created successfully:', data);
       }
 
+      clearTimeout(timeoutId);
       onAircraftUpdate();
       resetForm();
       alert('Aircraft saved successfully!');
     } catch (error) {
+      clearTimeout(timeoutId);
       console.error('Error saving aircraft:', error);
-      alert(`Error saving aircraft: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Show more detailed error message
+      let errorMessage = 'Unknown error';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      }
+      
+      alert(`Error saving aircraft: ${errorMessage}`);
       setIsSubmitting(false);
     }
   };
@@ -204,6 +389,20 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tail Number
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.tail_number}
+                      onChange={(e) => setFormData(prev => ({ ...prev, tail_number: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., N1234A"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Price ($)
                     </label>
                     <input
@@ -212,7 +411,11 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
                       step="0.01"
                       required
                       value={formData.price}
-                      onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const numValue = value === '' ? 0 : parseFloat(value);
+                        setFormData(prev => ({ ...prev, price: isNaN(numValue) ? 0 : numValue }));
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -226,7 +429,11 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
                       min="0"
                       required
                       value={formData.display_order}
-                      onChange={(e) => setFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) }))}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const numValue = value === '' ? 0 : parseInt(value);
+                        setFormData(prev => ({ ...prev, display_order: isNaN(numValue) ? 0 : numValue }));
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -275,19 +482,78 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Image URL
+                    Aircraft Image
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.image_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="/aircraft-image.jpg or https://example.com/image.jpg"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    Use relative paths like "/image.jpg" for local images, or full URLs for external images
-                  </p>
+                  
+                  {/* Current Image Preview */}
+                  {previewUrl && (
+                    <div className="mb-4">
+                      <img 
+                        src={previewUrl} 
+                        alt="Aircraft preview" 
+                        className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                      {selectedFile && (
+                        <div className="flex justify-between items-center mt-2 p-2 bg-blue-50 rounded">
+                          <span className="text-sm text-blue-700">New file: {selectedFile.name}</span>
+                          <button
+                            type="button"
+                            onClick={removeSelectedFile}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* File Upload */}
+                  <div className="space-y-3">
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors duration-200"
+                      >
+                        <Upload className="w-5 h-5 mr-2 text-gray-400" />
+                        <span className="text-gray-600">
+                          {selectedFile ? 'Change Image' : editingId ? 'Replace Image' : 'Upload Aircraft Image'}
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Manual URL Input (Alternative) */}
+                    <div className="relative">
+                      <div className="text-center text-sm text-gray-500 mb-2">OR</div>
+                      <input
+                        type="text"
+                        value={formData.image_url}
+                        onChange={(e) => {
+                          setFormData(prev => ({ ...prev, image_url: e.target.value }));
+                          if (e.target.value && !selectedFile) {
+                            setPreviewUrl(e.target.value);
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter image URL manually"
+                      />
+                    </div>
+
+                    <p className="text-sm text-gray-500">
+                      Upload an image file (max 5MB) or enter an image URL. Supported formats: JPG, PNG, WebP
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex items-center">
@@ -306,18 +572,20 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
                 <div className="flex gap-4 pt-4">
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isUploading}
                     className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting 
-                      ? 'Saving...' 
-                      : editingId ? 'Update Aircraft' : 'Add Aircraft'
+                    {isUploading 
+                      ? 'Uploading Image...' 
+                      : isSubmitting 
+                        ? 'Saving...' 
+                        : editingId ? 'Update Aircraft' : 'Add Aircraft'
                     }
                   </button>
                   <button
                     type="button"
                     onClick={resetForm}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isUploading}
                     className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
@@ -337,12 +605,12 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
               <div className="flex items-center space-x-4">
                 <img 
                   src={item.image_url} 
-                  alt={item.name}
+                  alt={`Thumbnail image of ${item.name} aircraft`}
                   className="w-16 h-16 object-cover rounded-lg"
                 />
                 <div>
                   <h3 className="font-semibold text-lg">{item.name}</h3>
-                  <p className="text-gray-600">{item.model} - ${item.price}</p>
+                  <p className="text-gray-600">{item.model} ({item.tail_number}) - ${item.price}</p>
                   <p className="text-sm text-gray-500">{item.description}</p>
                 </div>
               </div>
@@ -359,10 +627,24 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
                 >
                   {item.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
+
+                <button
+                  onClick={() => handleQuickImageUpload(item.id)}
+                  disabled={uploadingAircraftId === item.id}
+                  className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Upload new image"
+                >
+                  {uploadingAircraftId === item.id ? (
+                    <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                </button>
                 
                 <button
                   onClick={() => handleEdit(item)}
                   className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors duration-200"
+                  title="Edit aircraft details"
                 >
                   <Edit className="w-4 h-4" />
                 </button>
@@ -370,6 +652,7 @@ export const AircraftManager: React.FC<AircraftManagerProps> = ({
                 <button
                   onClick={() => handleDelete(item.id)}
                   className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors duration-200"
+                  title="Delete aircraft"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

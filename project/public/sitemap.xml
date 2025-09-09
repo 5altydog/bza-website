@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://www.flybyla.com/</loc>
+    <lastmod>2025-08-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.flybyla.com/palos-verdes-coastline-aerial.jpg</image:loc>
+      <image:title>Aerial view of Palos Verdes coastline from aircraft</image:title>
+      <image:caption>Beautiful aerial photography of the Los Angeles coastline taken during a discovery flight</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.flybyla.com/cessna-172s.jpg</image:loc>
+      <image:title>Cessna 172S aircraft for flight training</image:title>
+      <image:caption>Modern Cessna 172S used for discovery flights and flight training</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.flybyla.com/cessna-172s-g1000.jpg</image:loc>
+      <image:title>Cessna 172S with G1000 avionics</image:title>
+      <image:caption>Advanced Cessna 172S equipped with Garmin G1000 glass cockpit</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.flybyla.com/cessna-152.jpg</image:loc>
+      <image:title>Cessna 152 training aircraft</image:title>
+      <image:caption>Classic Cessna 152 perfect for basic flight training</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.flybyla.com/n2114u.jpg</image:loc>
+      <image:title>N2114U aircraft</image:title>
+      <image:caption>Our N2114U aircraft available for discovery flights</image:caption>
+    </image:image>
+  </url>
+
+</urlset>

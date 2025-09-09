@@ -10,6 +10,14 @@ interface BookingModalProps {
   onSubmit: (formData: BookingFormData) => Promise<void>;
 }
 
+const BookingFormIncludesText: React.FC = () => {
+  return (
+    <p className="text-sm text-blue-600 mt-2">
+      Includes: Pre-flight briefing, flight with certified instructor (CFI), and post-flight debrief
+    </p>
+  );
+};
+
 export const BookingModal: React.FC<BookingModalProps> = ({
   isOpen,
   onClose,
@@ -111,9 +119,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <div className="bg-blue-50 p-4 rounded-lg mb-6">
               <h3 className="font-semibold text-blue-900">{selectedAircraft.name}</h3>
               <p className="text-blue-700">${selectedAircraft.price} - {selectedAircraft.description}</p>
-              <p className="text-sm text-blue-600 mt-2">
-                Includes: 1-hour flight time, pre-flight briefing, instructor guidance, and post-flight debrief
-              </p>
+              <BookingFormIncludesText />
             </div>
           )}
 

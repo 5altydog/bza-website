@@ -14,6 +14,7 @@ export const AircraftCard: React.FC<AircraftCardProps> = ({ aircraft, onBook }) 
     id: aircraft.id,
     name: aircraft.name,
     model: aircraft.model,
+    tailNumber: 'tail_number' in aircraft ? aircraft.tail_number : (aircraft as any).tailNumber || '',
     price: aircraft.price,
     capacity: aircraft.capacity,
     avionics: aircraft.avionics,
@@ -32,7 +33,7 @@ export const AircraftCard: React.FC<AircraftCardProps> = ({ aircraft, onBook }) 
 
   return (
     <div 
-      className="bg-white rounded-xl shadow-2xl drop-shadow-lg overflow-hidden hover:shadow-2xl hover:drop-shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 focus-within:ring-2 focus-within:ring-blue-500"
+      className="bg-white rounded-xl shadow-2xl drop-shadow-lg overflow-hidden hover:shadow-2xl hover:drop-shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 focus-within:ring-2 focus-within:ring-blue-500 flex flex-col h-full w-full max-w-sm"
       onClick={handleCardClick}
       role="button"
       tabIndex={0}
@@ -47,18 +48,18 @@ export const AircraftCard: React.FC<AircraftCardProps> = ({ aircraft, onBook }) 
       <div className="relative h-64">
         <img 
           src={normalizedAircraft.image} 
-          alt={`${aircraft.name} - ${aircraft.description}`}
+          alt={`${aircraft.name} aircraft parked on tarmac - ${aircraft.description}`}
           className="w-full h-full object-cover"
           loading="lazy"
         />
-        <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+        <div className="absolute top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full text-lg font-semibold">
           ${aircraft.price}
         </div>
       </div>
       
-      <div className="p-6">
+      <div className="p-6 flex flex-col flex-grow">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">{aircraft.name}</h3>
-        <p className="text-gray-600 mb-4">{aircraft.description}</p>
+        <p className="text-gray-600 mb-4 flex-grow">{aircraft.description}</p>
         
         <div className="space-y-3 mb-6">
           <div className="flex items-center text-gray-700">
@@ -73,7 +74,7 @@ export const AircraftCard: React.FC<AircraftCardProps> = ({ aircraft, onBook }) 
         
         <button 
           onClick={handleBookClick}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-auto"
           aria-label={`Book ${aircraft.name} flight`}
         >
           Book This Flight
