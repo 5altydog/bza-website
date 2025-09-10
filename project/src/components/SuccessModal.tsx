@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, Plane } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -41,13 +41,18 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose }) =
           <X className="w-6 h-6" />
         </button>
 
-        {/* Aircraft Icon */}
-        <div className="mb-6">
-          <Plane className="w-16 h-16 text-blue-600 mx-auto" />
+        {/* Aircraft Logo */}
+        <div className="mb-0">
+          <img 
+            src="/logo-transparent-rect.png" 
+            alt="Bravo Zulu Aviation logo" 
+            className="w-64 h-64 mx-auto object-contain brightness-0 saturate-100" 
+            style={{ filter: 'brightness(0) saturate(100%) invert(24%) sepia(78%) saturate(1867%) hue-rotate(215deg) brightness(95%) contrast(93%)' }}
+          />
         </div>
 
         {/* Success Message */}
-        <div className="space-y-4">
+        <div className="space-y-4 -mt-4">
           <h2 
             id="success-title" 
             className="text-2xl font-bold text-gray-900"
