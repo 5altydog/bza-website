@@ -1,5 +1,4 @@
 import React from 'react';
-import { Plane } from 'lucide-react';
 import { HeroContent } from '../lib/supabase';
 
 interface HeroSectionProps {
@@ -33,7 +32,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onChooseAircraft, hero
       
       <div className="relative z-10 text-center text-gray-900 px-4 max-w-4xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-center mb-6">
-          <Plane className="w-12 h-12 md:w-16 md:h-16 text-blue-600 mb-4 md:mb-0 md:mr-6" aria-hidden="true" />
+          <img 
+            src="/logo-transparent-black-rectangular.png" 
+            alt="Bravo Zulu Aviation logo" 
+            className="w-24 h-24 md:w-32 md:h-32 mb-4 md:mb-0 md:mr-6 object-contain brightness-0 saturate-100" 
+            style={{ filter: 'brightness(0) saturate(100%) invert(24%) sepia(78%) saturate(1867%) hue-rotate(215deg) brightness(95%) contrast(93%)' }}
+          />
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight">
             {title}
           </h1>

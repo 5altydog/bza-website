@@ -19,7 +19,12 @@
       "Bash(mv:*)",
       "Bash(find:*)",
       "Bash(npm run lint)",
-      "Read(C:\\Users\\tedwi\\Downloads/**)"
+      "Read(C:\\Users\\tedwi\\Downloads/**)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Read(//g/My Drive/Companies/Bravo Zulu Aviation LLC/Marketing/**)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -8,6 +8,8 @@ import { AircraftCard } from './components/AircraftCard';
 import { BookingModal } from './components/BookingModal';
 import { SuccessModal } from './components/SuccessModal';
 import { AdminRoute } from './components/admin/AdminRoute';
+import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { TermsAndConditions } from './components/TermsAndConditions';
 import { Aircraft, BookingFormData } from './types';
 import { useAircraftData, useHeroContent, useSiteSettings } from './hooks/useCMSData';
 import { supabase } from './lib/supabase';
@@ -30,6 +32,15 @@ function App() {
       setShowAdmin(true);
     }
   }, []);
+
+  // Handle routing for privacy policy and terms
+  const currentPath = window.location.pathname;
+  if (currentPath === '/privacy-policy') {
+    return <PrivacyPolicy />;
+  }
+  if (currentPath === '/terms-and-conditions') {
+    return <TermsAndConditions />;
+  }
 
   const handleBookFlight = useCallback((aircraft: Aircraft) => {
     setSelectedAircraft(aircraft);
@@ -236,6 +247,29 @@ function App() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="py-6 bg-blue-900 text-white border-t border-blue-800">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center">
+            <div className="flex justify-center items-center text-sm text-blue-200">
+              <a 
+                href="/privacy-policy" 
+                className="hover:text-white transition-colors duration-300 cursor-pointer flex-1 text-right pr-6"
+              >
+                Privacy Policy
+              </a>
+              <span className="text-blue-400 mx-6">•</span>
+              <a 
+                href="/terms-and-conditions" 
+                className="hover:text-white transition-colors duration-300 cursor-pointer flex-1 text-left pl-6"
+              >
+                Terms and Conditions
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
 
         <BookingModal
           isOpen={showBookingForm}
